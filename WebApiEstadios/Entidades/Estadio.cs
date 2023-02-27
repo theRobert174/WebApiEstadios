@@ -8,5 +8,7 @@
         public string Coords { get; set;}
         public uint ParkingCapacity { get; set;}
         public uint TotalSeats { get; set;}
+        public List<Area> Areas { get; set;}
+        public EstadioType EstadioType { get; set;}
     }
 }
