@@ -11,5 +11,6 @@ namespace WebApiEstadios
         }
 
         public DbSet<Estadio> Estadios { get; set; }
+        public DbSet<Area> Areas { get; set; }
     }
 }

@@ -13,10 +13,11 @@ namespace WebApiEstadios.Controllers
         {
             this.dbContext = context;
         }
+
         [HttpGet]
         public async Task< ActionResult< List<Estadio>>> Get()
         {
-            return await dbContext.Estadios.ToListAsync();
+            return await dbContext.Estadios.Include(x => x.Areas).ToListAsync();
         }
 
         [HttpPost]
