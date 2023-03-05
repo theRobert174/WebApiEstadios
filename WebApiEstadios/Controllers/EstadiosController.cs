@@ -8,73 +8,59 @@ namespace WebApiEstadios.Controllers
     [Route("/estadios")]
     public class EstadiosController : ControllerBase
     {
-        /*private readonly ApplicationDbContext dbContext;
-
-        public EstadiosController(ApplicationDbContext dbContext)
+        private readonly ApplicationDbContext dbContext;
+        public EstadiosController(ApplicationDbContext context)
         {
-            this.dbContext = dbContext;
-        }*/
-
+            this.dbContext = context;
+        }
         [HttpGet]
-        public ActionResult <List<Estadio>> Get()
+        public async Task< ActionResult< List<Estadio>>> Get()
         {
-            return new List<Estadio>()
-            {
-                new Estadio
-                {
-                    Id = 1,
-                    Name="Estadio Universitario",
-                    Owner="UANL",
-                    Coords="San Nicolas de los Garza",
-                    ParkingCapacity=500,
-                    TotalSeats=41886,
-                    Areas = new List<Area>()
-                    {
-                        new Area { Id = 1, Name="VIP", Capacity=100, Available=70, Taken=20 },
-                        new Area { Id = 2,Name="East", Capacity=500, Available=120, Taken=380 },
-                        new Area { Id = 3,Name="Staff", Capacity=150, Available=20, Taken=130 }
-                    },
-                    EstadioType = new EstadioType { Id = 1, Type = "Fútbol" }
-                },
-                new Estadio
-                { 
-                    Id = 2,
-                    Name="Estadio BBVA", 
-                    Owner = "FEMSA", 
-                    Coords="Guadalupe", 
-                    ParkingCapacity=200, 
-                    TotalSeats=51348,
-                    Areas = new List<Area>()
-                    {
-                        new Area { Id = 1, Name="VIP", Capacity=100, Available=70, Taken=20 },
-                        new Area { Id = 2,Name="East", Capacity=500, Available=120, Taken=380 },
-                        new Area { Id = 3,Name="Staff", Capacity=150, Available=20, Taken=130 }
-                    },
-                    EstadioType = new EstadioType { Id = 1, Type = "Fútbol" }
-                },
-                new Estadio
-                { 
-                    Id = 3,
-                    Name="Estadio Azteca", 
-                    Owner="Grupo Televisa", 
-                    Coords="Ciudad de Mexico", 
-                    ParkingCapacity=600, 
-                    TotalSeats=87000,
-                    Areas = new List<Area>()
-                    {
-                        new Area { Id = 1, Name="VIP", Capacity=100, Available=70, Taken=20 },
-                        new Area { Id = 2,Name="East", Capacity=500, Available=120, Taken=380 },
-                        new Area { Id = 3,Name="Staff", Capacity=150, Available=20, Taken=130 }
-                    },
-                    EstadioType = new EstadioType { Id = 1, Type = "Fútbol" }
-                }
-            };
+            return await dbContext.Estadios.ToListAsync();
         }
 
-        /*[HttpGet("first")]
-        public async Task<ActionResult<Estadio>> FirstEstadium()
+        [HttpPost]
+        public async Task<ActionResult> Post(Estadio estadio)
         {
-            return await dbContext.Estadios.FirstOrDefaultAsync();
-        }*/
+            dbContext.Add(estadio);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task< ActionResult> Put(Estadio estadio, int id)
+        {
+            if(estadio.Id != id) 
+            {
+                return BadRequest("El id del estadio no coincide con el proporcionado en el URL.");
+            }
+
+            var exist = await dbContext.Estadios.AnyAsync(x => x.Id == id);
+            if (!exist)
+            {
+                return NotFound();
+            }
+
+            dbContext.Update(estadio);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task< ActionResult> Delete(int id)
+        {
+            var exist = await dbContext.Estadios.AnyAsync(x => x.Id == id);
+            if(!exist)
+            {
+                return NotFound();
+            }
+
+            dbContext.Remove(new Estadio()
+            {
+                Id = id
+            });
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
     }
 }
