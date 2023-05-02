@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using WebApiEstadios.Entidades;
 
+using WebApiEstadios.Services;
+
 namespace WebApiEstadios.Controllers
 {
     [ApiController]
@@ -9,14 +11,57 @@ namespace WebApiEstadios.Controllers
     public class EstadiosController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
-        public EstadiosController(ApplicationDbContext context)
+
+        private readonly IService service;
+        private readonly ServiceScoped serviceScoped;
+        private readonly ServiceSingleton serviceSingleton;
+        private readonly ServiceTransient serviceTransient;
+        private readonly ILogger<EstadiosController> logger;
+
+        //Contructor
+        public EstadiosController( ApplicationDbContext context, IService service, ServiceScoped serviceScoped, 
+            ServiceSingleton serviceSingleton, ServiceTransient serviceTransient, ILogger<EstadiosController> logger )
         {
             this.dbContext = context;
+
+            this.service = service;
+            this.serviceScoped = serviceScoped;
+            this.serviceSingleton = serviceSingleton;
+            this.serviceTransient = serviceTransient;
+            this.logger = logger;
         }
 
+        [HttpGet("GUID")]
+        public ActionResult ObtenerGuid()
+        {
+            return Ok(new
+            {
+                EstadiosControllerScoped = serviceScoped.guid,
+                ServiceA_Scoped = service.GetScoped(),
+                EstadiosControllerSingleton = serviceSingleton.guid,
+                ServiceA_Singleton = service.GetSingleton(),
+                EstadiosControllerTransient = serviceTransient.guid,
+                ServiceA_Transient = service.GetTransient(),
+            });
+        }
+
+        //Endpoints-------------------------------------------------------
         [HttpGet]
         public async Task< ActionResult< List<Estadio>>> Get()
         {
+            /*
+                Niveles de logs
+                -Critical
+                -Error
+                -Warning
+                -Information
+                -Debug
+                -Trace
+            */
+            logger.LogInformation("Obteniendo listado de Estadios");
+            logger.LogWarning("Solicitud de solo lectura de Informacion en DB");
+            logger.LogWarning((string)service.ExecuteJob());
+
             return await dbContext.Estadios.Include(x => x.Areas).ToListAsync();
         }
 

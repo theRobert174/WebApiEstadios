@@ -2,6 +2,8 @@
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
+using WebApiEstadios.Services;
+
 namespace WebApiEstadios
 {
     public class Startup
@@ -24,7 +26,29 @@ namespace WebApiEstadios
             {
                 options.UseSqlServer(Configuration.GetConnectionString("defaultConnection"));
             });
-            
+
+            #region Mis Servicios
+
+            services.AddTransient<IService, ServiceA>();
+            /*
+                Transient da nueva instancia de la clase declarada, sirve para funciones que ejecutan un funcionalidad y listo, 
+                sin tener que mantener informacion que sera utlizada en otros lugares.              
+            */
+            services.AddTransient<ServiceTransient>();
+            /*
+                Scoped el tiempo de vida de la clase declarada aumenta, sin embargo, 
+                Scoped da diferentes instancias de acuerdo a cada quien que mande la solicitud
+                es decir Rodrigo tiene su instancia y Estadio otra
+            */
+            services.AddScoped<ServiceScoped>();
+            /*
+                Singleton se tiene la misma instancia siempre para todos los usuarios en todos los dias,
+                todo usuario que haga una peticion va a tener la misma informacion compartida entre todos
+            */
+            services.AddSingleton<ServiceSingleton>();
+
+            #endregion
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
