@@ -20,8 +20,21 @@ namespace WebApiEstadios.Controllers
             return await dbContext.Estadios.Include(x => x.Areas).ToListAsync();
         }
 
+        [HttpGet("primero")]
+        public async Task<ActionResult<Estadio>> PrimerEstadio()
+        {
+            return await dbContext.Estadios.Include(x => x.Areas).FirstOrDefaultAsync();
+        }
+
+        //[HttpGet("{id:int}")]
+        [HttpGet("get")]
+        public async Task<ActionResult<Estadio>> GetById([FromQuery] int id)
+        {
+            return await dbContext.Estadios.Include(x => x.Areas).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         [HttpPost]
-        public async Task<ActionResult> Post(Estadio estadio)
+        public async Task<ActionResult> Post([FromBody] Estadio estadio)
         {
             dbContext.Add(estadio);
             await dbContext.SaveChangesAsync();
