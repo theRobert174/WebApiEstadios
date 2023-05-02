@@ -68,6 +68,7 @@ namespace WebApiEstadios.Controllers
         [HttpGet("primero")]
         public async Task<ActionResult<Estadio>> PrimerEstadio()
         {
+            logger.LogInformation("Obteniendo el primer Estadio");
             return await dbContext.Estadios.Include(x => x.Areas).FirstOrDefaultAsync();
         }
 
@@ -75,13 +76,17 @@ namespace WebApiEstadios.Controllers
         [HttpGet("get")]
         public async Task<ActionResult<Estadio>> GetById([FromQuery] int id)
         {
+            logger.LogInformation($"Obteniendo estadio por el id: {id}");
             return await dbContext.Estadios.Include(x => x.Areas).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] Estadio estadio)
         {
+            logger.LogInformation("Agregando nuevo Estadio");
             dbContext.Add(estadio);
+
+            logger.LogInformation("Guardando los cambios en la DB");
             await dbContext.SaveChangesAsync();
             return Ok();
         }
@@ -89,18 +94,24 @@ namespace WebApiEstadios.Controllers
         [HttpPut("{id:int}")]
         public async Task< ActionResult> Put(Estadio estadio, int id)
         {
+            logger.LogInformation($"Modificacion de datos de estadio");
             if(estadio.Id != id) 
             {
-                return BadRequest("El id del estadio no coincide con el proporcionado en el URL.");
+                logger.LogError($"El id: {id} del URL no coincide con el id: {estadio.Id} del objeto a modificar");
+                return BadRequest($"El id:{estadio.Id} del estadio no coincide con el proporcionado en el URL: {id}.");
             }
 
             var exist = await dbContext.Estadios.AnyAsync(x => x.Id == id);
             if (!exist)
             {
+                logger.LogError($"El estadio con el id: {id} que busca no existe");
                 return NotFound();
             }
 
+            logger.LogWarning($"Se encontro el estadio asociado con el id: {id}, se procede con la actualizacion de datos del estadio: {estadio.Id} {estadio.Name}");
             dbContext.Update(estadio);
+
+            logger.LogInformation("Guardando los cambios en la DB");
             await dbContext.SaveChangesAsync();
             return Ok();
         }
@@ -108,16 +119,22 @@ namespace WebApiEstadios.Controllers
         [HttpDelete("{id:int}")]
         public async Task< ActionResult> Delete(int id)
         {
+            logger.LogInformation($"Eliminacion del registro con el id: {id}");
             var exist = await dbContext.Estadios.AnyAsync(x => x.Id == id);
+
             if(!exist)
             {
+                logger.LogError($"El estadio con el id: {id} que busca no existe");
                 return NotFound();
             }
 
+            logger.LogWarning($"Se encontro el estadio asociado con el id: {id}, se procede con la eliminacion");
             dbContext.Remove(new Estadio()
             {
                 Id = id
             });
+
+            logger.LogInformation("Guardando los cambios en la DB");
             await dbContext.SaveChangesAsync();
             return Ok();
         }
