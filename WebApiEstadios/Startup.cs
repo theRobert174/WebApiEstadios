@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
-
+using WebApiEstadios.Middlewares;
 using WebApiEstadios.Services;
 
 namespace WebApiEstadios
@@ -56,8 +56,63 @@ namespace WebApiEstadios
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+            #region Middleware
+
+            //Un Middleware se caracteriza por un "Use"
+
+            //1)Middleware
+            //"Use" permite agregar un proceso sin interrumpir el flujo como "Run"
+            /*app.Use(async (context, siguiente) =>
+            {
+                using (var ms = new MemoryStream())
+                {
+                    //Se asigna el body del response en una variable y se le da el valor de memoryStream
+                    var originalBody = context.Response.Body;
+                    context.Response.Body = ms;
+
+                    //Permite continuar con la siguiente linea
+                    await siguiente.Invoke();
+
+                    //Guardamos lo que le respondemos al cliente en el string
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    string response = new StreamReader(ms).ReadToEnd();
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    //Leemos el stream y lo dejamos como estaba
+                    await ms.CopyToAsync(originalBody);
+                    context.Response.Body = originalBody;
+
+                    logger.LogInformation(response);
+                }
+            });*/
+
+            //2)Middleware
+            //Metodo para usar la clase propia creada de middleware
+            //app.UseMiddleware<ResponseHttpMiddleware>();
+
+            //3)Middleware
+            //Metodo para utilizar la middleware sin exponer la clase
+            app.UseResponseHttpMiddleware();
+
+            /*
+                Atrapa todas las peticiones http que mandemos y retorna un string 
+                Para detener todos los otros middleware segun una ruta especifica se utiliza Map, al usar Map permite que en lugar de ejecutar linealmente
+                podemos agregar rutas especificas para nuestro middleware
+            */
+            app.Map("/maping", app =>
+            {
+                //Usar solo "Run" rompe con el fujo del codigo, pero si se usa dentro de un "Map" sigue con las demas peticiones
+                app.Run(async context =>
+                {
+                    await context.Response.WriteAsync("Interceptando las peticiones");
+                });
+            });
+
+            #endregion
+
             // Configure the HTTP request pipeline.
             if (env.IsDevelopment())
             {
